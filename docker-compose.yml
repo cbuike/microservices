@@ -11,4 +11,20 @@ services:
     ports:
       - 5432:5432
     restart: unless-stopped
+    networks:
+      - postgres
+
+
+  zipkin:
+    container_name: ms-services-zipkin
+    image: openzipkin/zipkin:latest
+    ports:
+      - 9411:9411  # Zipkin UI and API
+    restart: unless-stopped
+    networks:
+      - postgres
+
+networks:
+  postgres:
+    driver: bridge
 
