@@ -1,6 +1,8 @@
 spring:
-  application:
-    name: job-service
+#  application:
+#    name: job-service
+  profiles:
+    active: dev
 
   datasource:
     url: jdbc:postgresql://localhost:5432/jobapp_db
@@ -13,6 +15,9 @@ spring:
     show-sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  config:
+    import: optional:configserver:http://localhost:8080
 
 eureka:
   client:
@@ -28,6 +33,7 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
 
 
 
