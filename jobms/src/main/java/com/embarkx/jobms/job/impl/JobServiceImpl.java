@@ -1,5 +1,7 @@
 package com.embarkx.jobms.job.impl;
 
+import com.embarkx.jobms.clients.CompanyClient;
+import com.embarkx.jobms.clients.ReviewClient;
 import com.embarkx.jobms.external.Company;
 import com.embarkx.jobms.external.Review;
 import com.embarkx.jobms.job.Job;
@@ -10,18 +12,15 @@ import com.embarkx.jobms.job.mapper.JobMapper;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
 public class JobServiceImpl implements JobService {
 
     private final JobRepository jobRepository;
-    private final RestTemplate restTemplate;
+    private final CompanyClient companyClient;
+    private final ReviewClient reviewClient;
 
     @Override
     public List<JobDTO> findAll() {
@@ -69,14 +68,8 @@ public class JobServiceImpl implements JobService {
     }
 
     private JobDTO toDto(Job job) {
-        Company company = restTemplate.getForObject("http://COMPANY-SERVICE/companies/" + job.getCompanyId(), Company.class);
-
-        ResponseEntity<List<Review>> reviews = restTemplate
-                .exchange("http://REVIEW-SERVICE/reviews?companyId=" + job.getCompanyId(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<List<Review>>() {});
-
-        return JobMapper.toJobWithCompanyDTO(job, company, reviews.getBody());
+        Company company = companyClient.getCompany (Long.valueOf(job.getCompanyId()));
+        List<Review> reviews = reviewClient.getReviews(Long.valueOf(job.getCompanyId()));
+        return JobMapper.toJobWithCompanyDTO(job, company, reviews);
     }
 }
