@@ -1,0 +1,4 @@
+## Spin up docker compose
+
+docker exec -it ms-services psql -U embarkx -d jobapp_db -c "CREATE DATABASE reviews_db;"
+docker exec -it ms-services psql -U embarkx -d jobapp_db -c "CREATE DATABASE reviews_db;"
