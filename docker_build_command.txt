@@ -1,0 +1,5 @@
+./mvnw spring-boot:build-image "-Dspring-boot.build-image.imageName=xtiancee/servicereg"
+./mvnw spring-boot:build-image "-Dspring-boot.build-image.imageName=xtiancee/jobms"
+./mvnw spring-boot:build-image "-Dspring-boot.build-image.imageName=xtiancee/companyms"
+./mvnw spring-boot:build-image "-Dspring-boot.build-image.imageName=xtiancee/reviewms"
+./mvnw spring-boot:build-image "-Dspring-boot.build-image.imageName=xtiancee/gatewayms"

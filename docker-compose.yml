@@ -1,6 +1,37 @@
+#services:
+#  postgres:
+#    container_name: ms-services
+#    image: postgres:latest
+#    environment:
+#      POSTGRES_USER: embarkx
+#      POSTGRES_PASSWORD: embarkx
+#      POSTGRES_DB: jobapp_db   # main DB
+#    volumes:
+#      - ./postgres-data:/var/lib/postgresql/data
+#    ports:
+#      - 5432:5432
+#    restart: unless-stopped
+#    networks:
+#      - postgres
+#
+#
+#  zipkin:
+#    container_name: ms-services-zipkin
+#    image: openzipkin/zipkin:latest
+#    ports:
+#      - 9411:9411  # Zipkin UI and API
+#    restart: unless-stopped
+#    networks:
+#      - postgres
+#
+#networks:
+#  postgres:
+#    driver: bridge
+
+
 services:
   postgres:
-    container_name: ms-services
+    container_name: ms-services-postgres
     image: postgres:latest
     environment:
       POSTGRES_USER: embarkx
@@ -14,7 +45,6 @@ services:
     networks:
       - postgres
 
-
   zipkin:
     container_name: ms-services-zipkin
     image: openzipkin/zipkin:latest
@@ -23,6 +53,7 @@ services:
     restart: unless-stopped
     networks:
       - postgres
+      - micro-service-network
 
   rabbitmq:
     container_name: ms-services-rabbitmq
@@ -36,8 +67,76 @@ services:
     restart: unless-stopped
     networks:
       - postgres
+      - micro-service-network
+
+  servicereg:
+    container_name: servicereg
+    image: xtiancee/servicereg:latest
+    ports:
+      - "8761:8761"
+    depends_on:
+      - rabbitmq
+      - zipkin
+      - postgres
+    networks:
+      - micro-service-network
+      - postgres
+
+  gatewayms:
+    container_name: gatewayms
+    image: xtiancee/gatewayms:latest
+    ports:
+      - 8084:8084
+    depends_on:
+      - servicereg
+    networks:
+      - micro-service-network
+      - postgres
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  companyms:
+    container_name: company
+    image: xtiancee/companyms:latest
+    ports:
+      - 8081:8081
+    depends_on:
+      - servicereg
+    networks:
+      - micro-service-network
+      - postgres
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  jobms:
+    container_name: job
+    image: xtiancee/jobms:latest
+    ports:
+      - 8082:8082
+    depends_on:
+      - servicereg
+    networks:
+      - micro-service-network
+      - postgres
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+#
+  reviewms:
+    container_name: review
+    image: xtiancee/reviewms:latest
+    ports:
+      - 8083:8083
+    depends_on:
+      - servicereg
+    networks:
+      - micro-service-network
+      - postgres
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
 
 networks:
   postgres:
+    driver: bridge
+  micro-service-network:
     driver: bridge
 

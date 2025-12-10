@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      routes:
+        - id: company-service
+          uri: http://companyms:8083
+          predicates:
+            - Path=/companies/**
+        - id: job-service
+          uri: http://jobms:8082
+          predicates:
+            - Path=/jobs/**
+        - id: review-service
+          uri: http://reviewms:8083
+          predicates:
+            - Path=/reviews/**
+        - id: eureka-server
+          uri: http://servicereg:8761
+          predicates:
+            - Path=/eureka/main
+          filters:
+            - SetPath=/
+
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://servicereg:8761/eureka/
+
+server:
+  port: 8084
+
+logging:
+  level:
+    root: info
+    org.springframework.cloud.gateway.route.RouteDefinitionLocator: INFO
+    org.springframework.cloud.gateway: TRACE
+
+management:
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1.0

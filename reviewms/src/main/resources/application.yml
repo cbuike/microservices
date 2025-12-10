@@ -38,4 +38,14 @@ management:
       probability: 1.0
 
 
+job-service:
+  url: http://localhost:8082
+
+company-service:
+  url: http://localhost:8081
+
+review-service:
+  url: http://localhost:8083
+
+
 
