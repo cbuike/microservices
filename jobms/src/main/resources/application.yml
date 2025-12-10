@@ -26,13 +26,52 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka/
 
+## Port
 server:
   port: 8082
 
+## Circuit Breaker
+resilience4j:
+  circuitbreaker:
+    instances:
+      companyBreaker:
+        register-health-indicator: true # registers health indicator for companyBreaker
+        sliding-window-size: 10 #
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        wait-duration-in-open-state: 10s
+        failure-rate-threshold: 50
+        automatic-transition-from-open-to-half-open-enabled: true
+        sliding-window-type: count_based
+
+  ratelimiter:
+    instances:
+      companyBreaker:
+        limit-refresh-period: 4
+        limit-for-period: 2
+        timeout-duration: 0
+
+  retry:
+    instances:
+      companyBreaker:
+        max-attempts: 5 # retry attempts
+        wait-duration: 2s # duration before retrying
+
+## Actuator Management
 management:
   tracing:
     sampling:
       probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
 
 
 
