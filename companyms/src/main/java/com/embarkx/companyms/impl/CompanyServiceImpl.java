@@ -3,16 +3,22 @@ package com.embarkx.companyms.impl;
 import com.embarkx.companyms.Company;
 import com.embarkx.companyms.CompanyRepository;
 import com.embarkx.companyms.CompanyService;
+import com.embarkx.companyms.clients.ReviewClient;
+import com.embarkx.companyms.dto.ReviewMessage;
+import jakarta.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
+    private final ReviewClient reviewClient;
 
     @Override
     public List<Company> getAllCompanies() {
@@ -49,5 +55,18 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public Company getCompanyById(Long id) {
         return companyRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public void updateCompanyRating(ReviewMessage reviewMessage) {
+        log.info("Message Description: {} ", reviewMessage.getDescription());
+        Company company = companyRepository.findById(reviewMessage.getCompanyId())
+                .orElseThrow(() ->
+                        new NotFoundException("Company not found: " + reviewMessage.getCompanyId()));
+
+        double averageRating = reviewClient.getAverageRatingForCompany(company.getId());
+        company.setRating(averageRating);
+
+        companyRepository.save(company);
     }
 }
