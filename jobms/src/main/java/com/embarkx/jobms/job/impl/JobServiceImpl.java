@@ -9,6 +9,7 @@ import com.embarkx.jobms.job.JobRepository;
 import com.embarkx.jobms.job.JobService;
 import com.embarkx.jobms.job.dto.JobDTO;
 import com.embarkx.jobms.job.mapper.JobMapper;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +24,18 @@ public class JobServiceImpl implements JobService {
     private final ReviewClient reviewClient;
 
     @Override
+//  @CircuitBreaker(name = "companyBreaker", fallbackMethod = "companyBreakerFallback")
+    // @Retry(name = "companyBreaker", fallbackMethod = "companyBreakerFallback")
+    @RateLimiter(name = "companyBreaker", fallbackMethod = "companyBreakerFallback")
     public List<JobDTO> findAll() {
         List<Job> jobs = jobRepository.findAll();
         return jobs.stream()
                 .map(this::toDto)
                 .toList();
+    }
+
+    public List<String> companyBreakerFallback(Exception e) {
+        return List.of("DUMMY");
     }
 
     @Override
