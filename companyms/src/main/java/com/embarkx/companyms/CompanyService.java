@@ -1,5 +1,6 @@
 package com.embarkx.companyms;
 
+import com.embarkx.companyms.dto.ReviewMessage;
 import java.util.List;
 
 public interface CompanyService {
@@ -8,4 +9,5 @@ public interface CompanyService {
     void createCompany(Company company);
     boolean deleteCompany(Long id);
     Company getCompanyById(Long id);
+    void updateCompanyRating(ReviewMessage reviewMessage);
 }

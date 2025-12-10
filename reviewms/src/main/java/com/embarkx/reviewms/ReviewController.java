@@ -1,5 +1,6 @@
 package com.embarkx.reviewms;
 
+import com.embarkx.reviewms.messaging.ReviewMessageProducer;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final ReviewMessageProducer reviewMessageProducer;
 
     @GetMapping
     public ResponseEntity<List<Review>> getAllReviews(@RequestParam Long companyId){
@@ -31,12 +33,14 @@ public class ReviewController {
     public ResponseEntity<String> addReview(@RequestParam Long companyId,
                                             @RequestBody Review review){
         boolean isReviewSaved = reviewService.addReview(companyId, review);
-        if (isReviewSaved)
+        if (isReviewSaved) {
+            reviewMessageProducer.sendMessage(review);
             return new ResponseEntity<>("Review Added Successfully",
                     HttpStatus.OK);
-        else
+        } else {
             return new ResponseEntity<>("Review Not Saved",
                     HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/{reviewId}")
@@ -66,5 +70,15 @@ public class ReviewController {
         else
             return new ResponseEntity<>("Review not deleted",
                     HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/averageRating")
+    public Double getAverageRating(@RequestParam("companyId") Long companyId) {
+        List<Review> reviewList = reviewService.getAllReviews(companyId);
+        return reviewList
+                .stream()
+                .mapToDouble(Review::getRating)
+                .average().orElse(0.0);
+
     }
 }
